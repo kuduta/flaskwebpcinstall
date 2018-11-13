@@ -1,0 +1,18 @@
+﻿{% extends "layout.html" %}
+
+
+{% block content %}
+
+    <table border="1">
+        <tr><th>สำนักงาน</th><th>Ip Address</th><th>วันที่ติดตั้ง</th><th>เวลาที่ติดตั้ง</th></tr>
+        {% for key,value in df_offreuslt.iterrows() %}
+        <option value="{{ value[0] }}">
+        <tr><td>{{value[0]}}</td><td>{{ value[1] }}</td><td>{{value[2]}}</td><td>{{value[3]}}</td></tr></option>
+        {% endfor %}
+    </table>
+
+<p>
+    {{ offresult }}
+</p>
+
+{% endblock %}

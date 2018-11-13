@@ -1,0 +1,71 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+<p class="lead">
+    <div class="jumbotron">
+        <h2>ติดตั้งแล้วเสร็จ {{resultall}} เครื่อง</h2>
+        <div id="graphDiv2"></div>
+        <!--[if IE]><script src="/static/scripts/excanvas.js"></script><![endif]-->
+        <script src="/static/scripts/html5-canvas-bar-graph.js"></script>
+        <script>
+    (function () {
+
+        function createCanvas(divName) {
+
+            var div = document.getElementById(divName);
+            var canvas = document.createElement('canvas');
+            div.appendChild(canvas);
+            if (typeof G_vmlCanvasManager != 'undefined') {
+                canvas = G_vmlCanvasManager.initElement(canvas);
+            }
+            var ctx = canvas.getContext("2d");
+            return ctx;
+        }
+
+
+
+        var ctx2 = createCanvas("graphDiv2");
+
+        var graph2 = new BarGraph(ctx2);
+        graph2.margin = 2;
+        graph2.width = 720;
+        graph2.height = 200;
+        graph2.xAxisLabelArr = ["Center", "Pak 1", "Pak 2", "Pak 3", "Pak 4", "Pak 5", "Pak 6", "Pak 7", "Pak 8", "Pak 9", "Pak 10", "Pak 11", "Pak 12"];
+        setInterval(function () {
+            graph2.update([{{ center }}, {{ pak1 }}, {{ pak2 }}, {{ pak3 }}, {{ pak4 }}, {{ pak5 }}, {{ pak6 }} , {{ pak7 }}, {{ pak8 }}, {{ pak9 }}, {{ pak10 }}, {{ pak11 }}, {{ pak12 }}]);
+        }, 1500);
+
+    }());</script>
+
+
+        
+</p>
+
+    <p><a href="{{ url_for('install') }}" class="btn btn-primary btn-large">ช้อมูลเพิ่มเติม &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h3>สรุปการติดตั้งวันนี้</h3>
+        <p>
+            <ul>
+                <li>วันนี้ติดตั้ง {{dailycount}} เครื่อง</li>
+                <li>เมื่อวานติดตั้ง {{ yestcount}} เครื่อง</li>
+            </ul>
+        </p>
+        <p><a class="btn btn-default" href="{{ url_for('dailyinstall') }}">ช้อมูลเพิ่มเติม &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h3>สรุปการติดตั้งรายสำนักงาน</h3>
+        <p>.....</p>
+        <p><a class="btn btn-default" href="{{ url_for('resultinstall') }}">ช้อมูลเพิ่มเติม &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h3>สรุป</h3>
+        <p>....</p>
+        <p><a class="btn btn-default" href="{{ url_for('home') }}">ช้อมูลเพิ่มเติม &raquo;</a></p>
+    </div>
+</div>
+
+{% endblock %}
