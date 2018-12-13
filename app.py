@@ -17,10 +17,10 @@ app = Flask(__name__)
 # Make the WSGI interface available at the top level so wfastcgi can get it.
 
 wsgi_app = app.wsgi_app
-engine = create_engine('postgresql://postgres:P@ssw0rd308@localhost/pcinstall',echo=False)
+engine = create_engine('postgresql://postgres:P@ssw0rd308@localhost/avpatch',echo=False)
 
 
-app.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:P@ssw0rd308@localhost/pcinstall'
+app.config['SQLALCHEMY_DATABASE_URI']='postgresql://postgres:P@ssw0rd308@localhost/avpatch'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -31,7 +31,6 @@ class Data(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     comName_ = db.Column(db.String(30))
     serialNumber_ = db.Column(db.String(50))
-    SID_ = db.Column(db.String(200))
     manufacturer_ = db.Column(db.String(100))
     ntVer_ = db.Column(db.String(5))
     operSys_ = db.Column(db.String(200))
@@ -50,12 +49,14 @@ class Data(db.Model):
     iinPak_ = db.Column(db.String(2))
     iinProvince_ = db.Column(db.String(16))
     idirOffice_ = db.Column(db.String(2))
+    EMSSagentstatus_ = db.Column(db.String(50))
 
-    def __init__(self, comName_ , serialNumber_, SID_, manufacturer_, ntVer_, operSys_, domain_, ipaddress_, netID_, MAC_, productName_, version_, GUID_, server_, inputTime_, inputDate_, ioffCode_, ioffName_, iinPak_, iinProvince_, idirOffice_ ):
+
+    def __init__(self, comName_ , serialNumber_,  manufacturer_, ntVer_, operSys_, domain_, ipaddress_, netID_, MAC_, productName_, version_, GUID_, server_, inputTime_, inputDate_, ioffCode_, ioffName_, iinPak_, iinProvince_, idirOffice_, EMSSagentstatus_ ):
 
         self.comName_ = comName_
         self.serialNumber_ = serialNumber_
-        self.SID_ = SID_
+      
         self.manufacturer_ = manufacturer_
         self.ntVer_ = ntVer_
         self.operSys_ = operSys_
@@ -74,7 +75,43 @@ class Data(db.Model):
         self.iinPak_ = iinPak_ 
         self.iinProvince_  = iinProvince_
         self.idirOffice_  = idirOffice_ 
+        self.EMSSagentstatus_ = EMSSagentstatus_
 
+
+class Helpme(db.Model):
+    __tablemname__ =  "helpme"
+    id = db.Column(db.Integer, primary_key=True)
+    firstName_ = db.Column(db.String(70)) 
+    lastName_ = db.Column(db.String(70))
+    telphone_ = db.Column(db.String(20))
+    ipaddress_ = db.Column(db.String(16))
+    EMSSagentstatus_ = db.Column(db.String(50))
+    offName_ = db.Column(db.String(50)) 
+    inPak_ = db.Column(db.String(2)) 
+    inProvince_ = db.Column(db.String(16)) 
+    dirOffice_ = db.Column(db.String(2)) 
+    status_ = db.Column(db.String(2)) 
+    inputTime_= db.Column(db.String(20))
+    inputDate_ = db.Column(db.String(20))
+
+    def __init__(self,firstName_, lastName_, telphone_, ipaddress_, EMSSagentstatus_, offName_, inPak_,inProvince_,dirOffice_ , status_ , inputTime_ , inputDate_) : 
+        
+        self.firstName = firstName_
+        self.lastName_ = lastName_
+        self.telphone_ = telphone_
+        self.ipaddress_ = ipaddress_
+        self.EMSSagentstatus_ = EMSSagentstatus_
+        self.offName_ =  offName_
+        self.inPak_ = inPak_
+        self.inProvince_ = inProvince_ 
+        self.dirOffice_ = dirOffice_ 
+        self.status_ = status_
+        self.inputTime_ = inputTime_
+        self.inputDate_ = inputDate_
+
+
+
+# this cLass modle for keep data req help user
 class DataOffice(db.Model):
     __tablename__ = "office"
     id = db.Column(db.Integer, primary_key=True)
@@ -102,14 +139,14 @@ class UserInstall(db.Model):
     email_ = db.Column(db.String(100))
     status_ = db.Column(db.String(2))
 
-    def __int__(self, username_, telephone_, email_, status):
+    def __int__(self, username_, telephone_, email_, status_):
         self.username_ = username_
         self.telephone_ = telephone_
         self.email_ = email_
-        self.status = status_
+        self.status_ = status_
         
         
-        # command >>> from api import db
+    # command >>> from api import db
     # command >>> db.create_all()
 
 
@@ -122,6 +159,42 @@ class UserInstall(db.Model):
 #    """Renders a sample page."""
 #    return "Hello World!"
 
+@app.route('/helpme',  methods=['POST','GET'])
+def post_help():
+    # get data form user helpme
+    firstName =  request.form['firstName']
+    lastName = request.form['lastName']
+    telphone = request.form['telphone']
+    ipaddress = request.form['ipaddress']
+    version = request.form['version']
+    EMSSagentstatus = request.form['EMSSagentstatus']
+    inputTime = datetime.now().strftime("%H:%M:%S")
+    inputDate = datetime.now().strftime("%Y-%m-%d")
+    status='n'
+    if firstName and lastName and telphone and ipaddress :
+
+        #### find Net ID
+        a, b, c, d = ipaddress.split('.')
+
+        netID = a+'.'+b+'.'+c
+
+        #if db.session.query(Data).filter(Data.ipaddress_ == ipaddress).count()== 0:
+        qryOffice=db.session.query(DataOffice).filter(DataOffice.subNet_==netID).first()
+     
+        ioffName = qryOffice.offName_ 
+        iinPak = qryOffice.inPak_ 
+        iinProvince = qryOffice.inProvince_
+        idirOffice = qryOffice.dirOffice_ 
+
+
+
+        data=Helpme(firstName ,lastName, telphone, ipaddress, version, EMSSagentstatus ,ioffName, iinPak,  iinProvince, idirOffice, status,  inputTime, inputDate )   
+        #data=Helpme(comName, serialNumber, manufacturer, ntVer,operSys,domain,ipaddress,netID,MAC,productName,version,GUID,server,inputTime,inputDate,ioffCode, ioffName , iinPak , iinProvince , idirOffice )
+        db.session.add(data)
+        db.session.commit()
+        return '<H2>ระบบได้รับข้อมูลการร้องขอเรียบร้อย ขอบคุณครับ'
+
+    return '<H2>ระบบไม่ได้รับข้อมูลขอบคุณครับ!'
 
 
 @app.route('/input', methods=['POST','GET'])
@@ -131,7 +204,7 @@ def get_data():
     if request.method == 'POST':
         comName = request.form['ComName']
         serialNumber = request.form['SerialNumber']
-        SID = request.form['SID']
+        #SID = request.form['SID']
         manufacturer = request.form['Manufacturer']
         ntVer = request.form['NtVer']
         operSys = request.form['OperSys']
@@ -146,7 +219,7 @@ def get_data():
         inputTime = datetime.now().strftime("%H:%M:%S")
         inputDate = datetime.now().strftime("%Y-%m-%d")
 
-        print(comName, serialNumber, SID, manufacturer, ntVer, operSys, domain, ipaddress, netID, MAC,
+        print(comName, serialNumber, manufacturer, ntVer, operSys, domain, ipaddress, netID, MAC,
                     productName, version, GUID, server, inputTime,  inputDate)
 
 
@@ -159,7 +232,7 @@ def get_data():
             iinProvince = qryOffice.inProvince_ 
             idirOffice = qryOffice.dirOffice_ 
 
-            data=Data(comName, serialNumber, SID, manufacturer, ntVer,operSys,domain,ipaddress,netID,MAC,productName,version,GUID,server,inputTime,inputDate,ioffCode, ioffName , iinPak , iinProvince , idirOffice )
+            data=Data(comName, serialNumber, manufacturer, ntVer,operSys,domain,ipaddress,netID,MAC,productName,version,GUID,server,inputTime,inputDate,ioffCode, ioffName , iinPak , iinProvince , idirOffice )
             db.session.add(data)
             db.session.commit()
             return '<H2>ระบบได้รับข้อมูลเครื่องคอมพิวเตอร์เรียบร้อย ขอบคุณครับ'
@@ -167,7 +240,7 @@ def get_data():
             qryIP= db.session.query(Data).filter(Data.ipaddress_==ipaddress).first()
             qryIP.comName_ = comName
             qryIP.serialNumber_ = serialNumber
-            qryIP.SID_ = SID
+            #qryIP.SID_ = SID
             qryIP.manufacturer_ = manufacturer
             qryIP.ntVer_ = ntVer
             qryIP.operSys_ = operSys
@@ -429,7 +502,7 @@ def dailyinstall():
         elif x == '9':
             pak9 = y
         elif x == '10':
-            pak10 = y
+            pak10 = y  
         elif x=='11':
             pak11 = y
         elif x == '12':
